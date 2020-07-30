@@ -303,14 +303,22 @@ function run(lines, polygons) {
 
     length = [];
     //Calculate distance between coordinates in the polygon or intersects it from the cords array
-    for (let cord = 0; cord < cords.length; cord++) {
+    for (var cord = 0; cord < cords.length; cord++) {
       var c = cords[cord];
       //remove duplicate items fron array
-      c = Array.from(new Set(c.map(JSON.stringify)), JSON.parse);
+      // c = Array.from(new Set(c.map(JSON.stringify)), JSON.parse);
+      var obj = {};
+
+      for (var i = 0, len = c.length; i < len; i++) {
+        obj[JSON.stringify(c[i])] = c[i];
+      }
+      c = new Array();
+      for (var key in obj) c.push(obj[key]);
+
       if (c.length == 1) {
         length.push(0);
       } else {
-        for (let p = 0; p < c.length - 1; p++) {
+        for (var p = 0; p < c.length - 1; p++) {
           h = 0;
           var incord1 = c[p];
           var incord2 = c[p + 1];
@@ -339,8 +347,3 @@ function run(lines, polygons) {
 }
 
 // console.log(answer)
-
-module.exports = {
-  run,
-  POLYGON,
-};

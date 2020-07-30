@@ -1,4 +1,6 @@
 var x = require("./geom.js");
+var x = require("./genetic-al.js");
+
 var db = app.ActiveModelDb;
 var doc = app.ActiveDocument();
 var model = app.ActiveModel;
@@ -63,25 +65,6 @@ function createRoad(coordinates) {
   var tableR = db.Table("ROADS");
   //   for (var i in IDs) {
   var feature = tableR.GetWriteRow();
-  // console.log("nadia1", Object.keys(feature));
-  // console.log("nadia2", Object.keys(tableR.QueryFeature(IDs[i])));
-
-  // var road = tableR.QueryFeature(id);
-
-  // console.log("this:", JSON.stringify(road.GEOMETRY.Is3d));
-  // var coords = JSON.parse(JSON.stringify(road.GEOMETRY.ToGeoJSON()))
-  //   .coordinates;
-  // // console.log("ll",coords)
-  // console.log("helloooo", JSON.stringify(road.GEOMETRY.ToGeoJSON()));
-
-  // var coordinates = [
-  //   coords[0],
-  //   [coords[0][0], coords[coords.length - 1][1], coords[0][2]],
-  //   coords[coords.length - 1],
-  // ];
-  // console.log("coordinates:", coordinates);
-  // //   console.log("row ", i, ":", road.GEOMETRY.GeometryCount);
-  // var wkt = "...";
 
   var pos = getGeometry(coordinates);
   var geom = new adsk.Geometry(pos);
@@ -126,8 +109,8 @@ getCoverageCoords();
 getRoadCoord();
 
 var answer = run(roadCoord, coverageCoords);
-scenario2(answer);
-scenario1(answer);
-console.log(answer[2]);
+// scenario2(answer);
+// scenario1(answer);
+// console.log(answer[2]);
 
 gc();
