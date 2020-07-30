@@ -298,7 +298,7 @@ function run(lines, polygons) {
       }
       cords.push(semi_cords);
     }
-    properties.intersection[line] = cords.slice();
+    properties.intersection[line] = JSON.parse(JSON.stringify(cords));
     // console.log(cords)
 
     length = [];
@@ -324,11 +324,15 @@ function run(lines, polygons) {
         length.push(h);
       }
     }
-    properties.lengthInPolygons[line] = length.slice();
-    properties.distances[line] = LINEAR_SPACE.get_nearest_polygon(
-      [lines[line], lines[line + 1]],
-      polygons
-    ).slice();
+    properties.lengthInPolygons[line] = JSON.parse(JSON.stringify(length));
+    properties.distances[line] = JSON.parse(
+      JSON.stringify(
+        LINEAR_SPACE.get_nearest_polygon(
+          [lines[line], lines[line + 1]],
+          polygons
+        )
+      )
+    );
     properties.totalLength = total_length;
   }
   return properties;
