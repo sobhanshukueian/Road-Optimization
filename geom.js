@@ -33,6 +33,14 @@ LINE = {
 
 POLYLINE_WIDTH = 2;
 
+var forEach = function (items, f) {
+  var myI = 0;
+  var myL = items.length;
+  for (myI = 0; myI < myL; myI++) {
+    f(items[myI]);
+  }
+};
+
 LINEAR_SPACE = {
   //Check if coordinate(x, y) is in the given polygon
   check_cord_in_polygon: function (polygon, x, y) {
@@ -112,7 +120,8 @@ LINEAR_SPACE = {
   //get distance of polygon's sides distance from a line and return the min
   get_nearest_polygon: function (line, polygons) {
     all_dis = [];
-    polygons.forEach((polygon) => {
+
+    forEach(polygons, function (polygon) {
       f = 0;
       //check if line intersects polygon or not
       for (p = 0; p < polygon.length - 1; p++) {
@@ -133,10 +142,10 @@ LINEAR_SPACE = {
       //if polygon and line separate from each other return the distance
       if (f == 0) {
         dot_dist = [];
-        for (let poly_cord = 0; poly_cord < polygon.length - 1; poly_cord++) {
+        for (var poly_cord = 0; poly_cord < polygon.length - 1; poly_cord++) {
           const element1 = polygon[poly_cord];
           dot_dist.push(
-            this.get_pDistance(
+            LINEAR_SPACE.get_pDistance(
               element1[0],
               element1[1],
               line[0][0],
@@ -177,9 +186,9 @@ LINEAR_SPACE = {
     var total_area = 0;
     //array for each polygon's area
     const areas = [];
-    polygons.forEach((polygon) => {
+    forEach(polygons, function (polygon) {
       //calculate each polygon's area
-      single_area = this.get_polygon_area(polygon);
+      single_area = LINEAR_SPACE.get_polygon_area(polygon);
       total_area += single_area;
       areas.push(single_area);
     });
@@ -270,7 +279,7 @@ function run(lines, polygons) {
     ]);
 
     //Calculate distance between coordinates in the polygon or intersects it from the cords array
-    for (let cord = 0; cord < cords.length - 1; cord++) {
+    for (var cord = 0; cord < cords.length - 1; cord++) {
       var cord1 = cords[cord];
       var cord2 = cords[cord + 1];
       if (cord1 != "nn" && cord1 != "|") {
@@ -343,7 +352,7 @@ function run(lines, polygons) {
 answer = run(LINE.coordinates, POLYGON.coordinates);
 
 function senario2(answers) {
-  for (let line = 0; line < answers[1].length; line++) {
+  for (var line = 0; line < answers[1].length; line++) {
     points = 0;
     const element = answers[1][line];
     if (element[2] == 0) {
@@ -380,16 +389,21 @@ function senario2(answers) {
 }
 
 function senario1(answer) {
-  for (let line = 0; line < answer[1].length; line++) {
+  for (var line = 0; line < answer[1].length; line++) {
     point = 0;
     const element = answer[1][line];
     if (element[2] == 0) {
-      if (element[4].every((v) => v === 45)) {
+      var res = true;
+      for (var i = 0; i < element[4].length; i++) {
+        res = res && element[4][i] === 45;
+      }
+      if (res) {
         point += 12;
       }
+
       six_point_flag = 0;
       sixteen_point_flag = 0;
-      element[4].forEach((dis) => {
+      forEach(element[4], function (dis) {
         if (dis < 60) {
           sixteen_point_flag = 1;
         }
@@ -405,7 +419,7 @@ function senario1(answer) {
       }
     } else {
       sum_area = 0;
-      for (let r = 0; r < element[4].length - 1; r++) {
+      for (var r = 0; r < element[4].length - 1; r++) {
         if (element[4][r] == 15) {
           sum_area += TOTAL_AREA[0][r];
         }
@@ -419,7 +433,7 @@ function senario1(answer) {
   }
 }
 
-senario2(answer);
-senario1(answer);
+// senario2(answer);
+// senario1(answer);
 
-console.log(answer[2]);
+// console.log(answer[2]);
