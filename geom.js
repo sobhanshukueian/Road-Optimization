@@ -1,35 +1,52 @@
 POLYGON = {
-  type: "Polygon",
+  type: ["Polygon2", "Polygon1", "Polygon3", "Polygon3", "Polygon2"],
   coordinates: [
     [
-      [-100, 20],
-      [-100, 60],
-      [-80, 40],
-      [-60, 60],
-      [-40, 40],
-      [-40, 20],
-      [-100, 20],
+      [50, 20],
+      [40, 30],
+      [55, 50],
+      [70, 30],
+      [60, 20],
+      [50, 20],
     ],
     [
-      [50, 10],
-      [50, 20],
-      [80, 20],
-      [80, 10],
-      [50, 10],
+      [10, 40],
+      [0, 50],
+      [10, 60],
+      [30, 60],
+      [40, 50],
+      [30, 40],
+      [10, 40],
+    ],
+    [
+      [20, 10],
+      [10, 20],
+      [20, 30],
+      [30, 20],
+      [20, 10],
+    ],
+    [
+      [-40, 10],
+      [-40, 30],
+      [0, 30],
+      [0, 20],
+      [-20, 10],
+      [-40, 10],
+    ],
+    [
+      [-40, 40],
+      [-40, 60],
+      [-60, 60],
+      [-60, 40],
+      [-40, 40],
     ],
   ],
 };
 
-LINE = {
-  type: "Line",
-  coordinates: [
-    [-110, 50],
-    [-60, 50],
-    [5, 5],
-    [5, 30],
-    [51, 12],
-  ],
-};
+// LINE = {
+//     "type" : 'Line',
+//     "coordinates" : [[-90,10],[-11,48],[1,36],[-86,48],[100,80]]
+// }
 
 POLYLINE_WIDTH = 2;
 
@@ -192,20 +209,27 @@ TOTAL_AREA = LINEAR_SPACE.get_total_area(POLYGON.coordinates);
 
 //Main function for calculating
 function run(lines, polygons) {
-  //array for display the output
-  display = [];
-  //array of lines prperties
-  properties = [];
-  //array of Coordimates of line that is in the polygon or intersects it
-  main_cords = [];
-
+  //object of lines prperties
+  properties = {
+    intersection: [],
+    distances: [],
+    lengthInPolygons: [],
+    totalPolygonArea: TOTAL_AREA[1],
+    polygonAreas: TOTAL_AREA[0],
+    totalLength: 0,
+  };
   //calculation on each line
+  var total_length = 0;
   for (line = 0; line < lines.length - 1; line++) {
+    total_length += LINEAR_SPACE.get_cords_distance(
+      lines[line][0],
+      lines[line][1],
+      lines[line + 1][0],
+      lines[line + 1][1]
+    );
     //Lines coordinates
     line_cords = [lines[line], lines[line + 1]];
     cords = [];
-    //seperate each polygon with "|"
-    cords.push("|");
 
     //calculation on each polygon
     for (j = 0; j < polygons.length; j++) {
@@ -218,9 +242,10 @@ function run(lines, polygons) {
           polygon,
           line_cords[0][0],
           line_cords[0][1]
-        )
+        ) &&
+        intersect[1] != line_cords[0] &&
+        intersect[1] != line_cords[1]
       ) {
-        cords.push(line_cords[0]);
         semi_cords.push(line_cords[0]);
       }
 
@@ -236,8 +261,11 @@ function run(lines, polygons) {
           polygon[p_cord + 1][0],
           polygon[p_cord + 1][1]
         );
-        if (intersect[0]) {
-          cords.push(intersect[1]);
+        if (
+          intersect[0] &&
+          intersect[1] != line_cords[0] &&
+          intersect[1] != line_cords[1]
+        ) {
           semi_cords.push(intersect[1]);
         }
       }
@@ -248,178 +276,58 @@ function run(lines, polygons) {
           polygon,
           line_cords[1][0],
           line_cords[1][1]
-        )
+        ) &&
+        intersect[1] != line_cords[0] &&
+        intersect[1] != line_cords[1]
       ) {
-        cords.push(line_cords[1]);
         semi_cords.push(line_cords[1]);
       }
 
       //if line doesnt intersect polygon push the nn in the arrays
       if (semi_cords.length == 0) {
-        cords.push("nn");
+        semi_cords.push("nn");
       }
-
-      //seperate each polygon with "|"
-      cords.push("|");
+      cords.push(semi_cords);
     }
-    main_cords.push(cords);
-    display.push([
-      "line" + line,
-      "Coordimates of line that is in the polygon or intersects it ==> " +
-        cords,
-    ]);
+    properties.intersection[line] = cords.slice();
+    // console.log(cords)
 
+    length = [];
     //Calculate distance between coordinates in the polygon or intersects it from the cords array
-    for (let cord = 0; cord < cords.length - 1; cord++) {
-      var cord1 = cords[cord];
-      var cord2 = cords[cord + 1];
-      if (cord1 != "nn" && cord1 != "|") {
-        //if coordinate be on the polygon it will copied in the array so we pass it
-        if (cord1[0] == cord2[0] && cord1[1] == cord2[1]) {
-          cord++;
-          cord1 = cords[cord];
-          cord2 = cords[cord + 1];
-        }
-        if (
-          properties.length != 0 &&
-          properties[properties.length - 1][0] == "line" + line
-        ) {
-          properties[
-            properties.length - 1
-          ][1] += LINEAR_SPACE.get_cords_distance(
-            cord1[0],
-            cord1[1],
-            cord2[0],
-            cord2[1]
-          );
-        } else {
-          properties.push([
-            "line" + line,
-            LINEAR_SPACE.get_cords_distance(
-              cord1[0],
-              cord1[1],
-              cord2[0],
-              cord2[1]
-            ),
-          ]);
-        }
-        cord++;
+    for (let cord = 0; cord < cords.length; cord++) {
+      var c = cords[cord];
+      //remove duplicate items fron array
+      c = Array.from(new Set(c.map(JSON.stringify)), JSON.parse);
+      if (c.length == 1) {
+        length.push(0);
       } else {
-        //if properties length equals zero or line be separate from polygons add zero to our array
-        if (
-          properties.length == 0 ||
-          (properties.length != 0 &&
-            properties[properties.length - 1][0] != "line" + line)
-        ) {
-          properties.push(["line" + line, 0]);
+        for (let p = 0; p < c.length - 1; p++) {
+          h = 0;
+          var incord1 = c[p];
+          var incord2 = c[p + 1];
+          h += LINEAR_SPACE.get_cords_distance(
+            incord1[0],
+            incord1[1],
+            incord2[0],
+            incord2[1]
+          );
         }
+        length.push(h);
       }
     }
-    display[line].push(
-      "Line's Area in Polygons == >  " + properties[line][1] * POLYLINE_WIDTH
-    );
-    display[line].push(
-      "Line Coordinates ==>  " + lines[line] + "  " + lines[line + 1]
-    );
-    display[line].push(
-      "line distances from polygons ==> " +
-        LINEAR_SPACE.get_nearest_polygon(
-          [lines[line], lines[line + 1]],
-          polygons
-        )
-    );
-    properties[line].push(properties[line][1] * POLYLINE_WIDTH);
-    properties[line].push([lines[line], lines[line + 1]]);
-    properties[line].push(
-      LINEAR_SPACE.get_nearest_polygon([lines[line], lines[line + 1]], polygons)
-    );
+    properties.lengthInPolygons[line] = length.slice();
+    properties.distances[line] = LINEAR_SPACE.get_nearest_polygon(
+      [lines[line], lines[line + 1]],
+      polygons
+    ).slice();
+    properties.totalLength = total_length;
   }
-  //return three arrays => first, main_cords that shows ,coordimates of line that is in the polygon or intersects it,return
-  // it if user needs, second ,properties of line that includes each line's properties in detail:
-  // 1:line's index, 2:line's length in the polygons, 3:Line's area in polygons, 4:array of line's coordinates, 5:array of line's distances from polygons
-  // and the third array is for displaying outputs
-  return [main_cords, properties, display];
-}
-answer = run(LINE.coordinates, POLYGON.coordinates);
-
-function senario2(answers) {
-  for (let line = 0; line < answers[1].length; line++) {
-    points = 0;
-    const element = answers[1][line];
-    if (element[2] == 0) {
-      points += 12;
-    } else {
-      if (
-        element[2] /
-          LINEAR_SPACE.get_cords_distance(
-            element[3][0][0],
-            element[3][0][1],
-            element[3][1][0],
-            element[3][1][1]
-          ) <
-        0.05
-      ) {
-        points += 8;
-      }
-      if (
-        element[2] /
-          LINEAR_SPACE.get_cords_distance(
-            element[3][0][0],
-            element[3][0][1],
-            element[3][1][0],
-            element[3][1][1]
-          ) <
-        0.1
-      ) {
-        points += 2;
-      }
-    }
-    answers[2][line].push("Line's point in senario 2 ==>  " + points);
-    element.push(points);
-  }
+  return properties;
 }
 
-function senario1(answer) {
-  for (let line = 0; line < answer[1].length; line++) {
-    point = 0;
-    const element = answer[1][line];
-    if (element[2] == 0) {
-      if (element[4].every((v) => v === 45)) {
-        point += 12;
-      }
-      six_point_flag = 0;
-      sixteen_point_flag = 0;
-      element[4].forEach((dis) => {
-        if (dis < 60) {
-          sixteen_point_flag = 1;
-        }
-        if (dis < 30) {
-          six_point_flag = 1;
-        }
-      });
-      if (six_point_flag == 0) {
-        point += 6;
-      }
-      if (sixteen_point_flag == 0) {
-        point += 16;
-      }
-    } else {
-      sum_area = 0;
-      for (let r = 0; r < element[4].length - 1; r++) {
-        if (element[4][r] == 15) {
-          sum_area += TOTAL_AREA[0][r];
-        }
-      }
-      if (sum_area / TOTAL_AREA[1] == 0.9) {
-        point += 2;
-      }
-    }
-    element.push(point);
-    answer[2][line].push("Line's point in senario 1 ==>  " + point);
-  }
-}
+// console.log(answer)
 
-senario2(answer);
-senario1(answer);
-
-console.log(answer[2]);
+module.exports = {
+  run,
+  POLYGON,
+};
