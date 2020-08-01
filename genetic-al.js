@@ -67,10 +67,16 @@ Genetic = {
       ];
     },
     Random: function (pop) {
-      return [Genetic.Selection1.Random(pop), Genetic.Selection1.Random(pop)];
+      return [
+        Genetic.Selection1.Random(pop), 
+        Genetic.Selection1.Random(pop)
+      ];
     },
     FittestRandom: function (pop) {
-      return [Genetic.Selection1.Fittest(pop), Genetic.Selection1.Random(pop)];
+      return [
+        Genetic.Selection1.Fittest(pop), 
+        Genetic.Selection1.Random(pop)
+      ];
     },
   },
   //crossover function
