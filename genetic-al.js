@@ -275,6 +275,14 @@ Problem = {
       }
       return min;
     }
+    function include(arr, itm){
+     for(var i = 0; i < arr.length ; i++){
+      if (arr[i] === itm){
+       return true
+      }
+     }
+     return false
+     }
     //calculate each polygons point for polyline
     for (var i = 0; i < POLYGON.type.length; i++) {
       if (POLYGON.type[i] == "Polygon1")
@@ -300,7 +308,7 @@ Problem = {
           )
         );
     }
-    if (polygon2.includes(222) && neededArea / info.totalPolygonArea > 0.9) {
+    if (include(polygon2, 222) && neededArea / info.totalPolygonArea > 0.9) {
       polygon2.push(2);
     }
     if (polygon2.length == 1 && polygon2[0] == 222) {
@@ -366,12 +374,14 @@ Problem = {
     individual.push(coordinates[0], coordinates[1]);
 
     //function for check duplicates in an array
-    function cordDuplicate(arr, item) {
-      var item_as_string = JSON.stringify(item);
-      var contains = arr.some(function (ele) {
-        return JSON.stringify(ele) === item_as_string;
-      });
-      return contains;
+   function cordDuplicate(arr, item){
+    var item_as_string = JSON.stringify(item);
+    for (var i = 0; i<arr.length; i++){
+     if(JSON.stringify(arr[i]) === item_as_string){
+      return true
+      }
+       }
+     return false;
     }
     while (individual.length < count) {
       rangeY = [
