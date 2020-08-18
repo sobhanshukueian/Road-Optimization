@@ -467,6 +467,9 @@ function start() {
     var pop = calFitness(entities)[0].sort(function (a, b) {
       return configuration.optimize(a.fitness, b.fitness) ? -1 : 1;
     });
+    
+    //log each generations best and worst fitness
+    console.log("generation" + i + "---------------> " + " min : " + pop[pop.length - 1].fitness + " max : " + pop[0].fitness)
 
     // more information
     var mean = totalFit / pop.length;
