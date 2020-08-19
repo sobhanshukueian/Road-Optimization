@@ -11,8 +11,12 @@ var bestReproject = app.GetBestFittingUTM84ProjectionWkt(
   dbWkt
 );
 var coverageIds = [];
+var waterAreaIds = [];
+
 var coverageCoords = [];
+var waterAreaCoords = [];
 var roadCoord = [];
+var coverageTypes = [];
 
 var roadIds = [];
 
@@ -38,8 +42,25 @@ function getCoverageIDs() {
   var read;
   while ((read = table.Next())) {
     coverageIds.push(read.ID);
-    console.log("coverage:", read.ID);
   }
+  table.EndQuery();
+}
+function getWaterAreasIDs() {
+  var sset = app.ActiveSelectionSet;
+  console.log("sset:", sset);
+
+  if (sset.QueryCount(db.TableIndex("WATER_AREAS")) < 1) {
+    print("Nothing Selected");
+    return;
+  }
+  var filter = sset.GetFilter(db.TableIndex("WATER_AREAS"));
+  var table = db.Table("WATER_AREAS");
+  table.StartQuery(filter);
+  var read;
+  while ((read = table.Next())) {
+    waterAreaIds.push(read.ID);
+  }
+  console.log("water Areas:", waterAreaIds);
   table.EndQuery();
 }
 function getRoadIDs() {
@@ -56,7 +77,6 @@ function getRoadIDs() {
   var read;
   while ((read = table.Next())) {
     roadIds.push(read.ID);
-    console.log("road:", read.ID);
     id = read.ID;
   }
   table.EndQuery();
@@ -83,18 +103,39 @@ function createRoad(coordinates) {
 }
 
 function getCoverageCoords() {
+  console.log("coverages:", coverageIds);
+
   forEach(coverageIds, function (id) {
     var tableC = db.Table("COVERAGES");
     var coverage = tableC.QueryFeature(id);
+    console.log("c", id, ":", coverage.RULE_STYLE, "__", coverage.MANUAL_STYLE);
+    coverageTypes.push(coverage.RULE_STYLE);
     var coords = JSON.parse(JSON.stringify(coverage.GEOMETRY.ToGeoJSON()))
       .coordinates;
     coverageCoords.push(coords[0]);
-    console.log("coverage", id, ":", coords);
+    tableC.EndQuery();
+  });
+}
+
+function getWaterAreaCoords() {
+  console.log("waterAreas:", waterAreaIds);
+
+  forEach(waterAreaIds, function (id) {
+    var tableC = db.Table("WATER_AREAS");
+    var waterArea = tableC.QueryFeature(id);
+    coverageTypes.push(waterArea.RULE_STYLE);
+    var coords = JSON.parse(JSON.stringify(waterArea.GEOMETRY.ToGeoJSON()))
+      .coordinates;
+    waterAreaCoords.push(coords[0]);
     tableC.EndQuery();
   });
 }
 function getRoadCoord() {
+  console.log("road:", roadIds);
+
   var id = roadIds[0];
+  console.log("selected road:", id);
+
   var tableR = db.Table("ROADS");
   var road = tableR.QueryFeature(id);
   roadCoord = JSON.parse(JSON.stringify(road.GEOMETRY.ToGeoJSON())).coordinates;
@@ -105,12 +146,30 @@ function getRoadCoord() {
 getRoadIDs();
 
 getCoverageIDs();
+getWaterAreasIDs();
 getCoverageCoords();
-getRoadCoord();
+getWaterAreaCoords();
 
-var answer = run(roadCoord, coverageCoords);
+getRoadCoord();
+console.log("types:", coverageTypes);
+configuration.coordinates = [roadCoord[0], roadCoord[roadCoord.length - 1]];
+POLYGON = { type: [], coordinates: [] };
+forEach(coverageCoords, function (val) {
+  POLYGON.type.push("Polygon1");
+  POLYGON.coordinates.push(val);
+});
+forEach(waterAreaCoords, function (val) {
+  POLYGON.type.push("Polygon2");
+  POLYGON.coordinates.push(val);
+});
+// var answer = run(roadCoord, coverageCoords);
 // scenario2(answer);
 // scenario1(answer);
 // console.log(answer[2]);
+
+var answer = start();
+console.log(answer["minimum-cords"]);
+console.log(Object.keys(answer));
+createRoad(answer["minimum-cords"]);
 
 gc();

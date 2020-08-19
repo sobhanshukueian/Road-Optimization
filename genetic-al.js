@@ -135,7 +135,7 @@ Genetic = {
         cb++;
       }
 
-      var offspring = [Array.from(father), Array.from(mother)];
+      var offspring = [father, mother];
 
       for (var i = ca; i < cb; i++) {
         offspring[0][i] = mother[i];
@@ -275,6 +275,14 @@ Problem = {
       }
       return min;
     }
+    function include(arr, itm) {
+      for (var i = 0; i < arr.length; i++) {
+        if (arr[i] === itm) {
+          return true;
+        }
+      }
+      return false;
+    }
     //calculate each polygons point for polyline
     for (var i = 0; i < POLYGON.type.length; i++) {
       if (POLYGON.type[i] == "Polygon1")
@@ -300,7 +308,7 @@ Problem = {
           )
         );
     }
-    if (polygon2.includes(222) && neededArea / info.totalPolygonArea > 0.9) {
+    if (include(polygon2, 222) && neededArea / info.totalPolygonArea > 0.9) {
       polygon2.push(2);
     }
     if (polygon2.length == 1 && polygon2[0] == 222) {
@@ -368,10 +376,12 @@ Problem = {
     //function for check duplicates in an array
     function cordDuplicate(arr, item) {
       var item_as_string = JSON.stringify(item);
-      var contains = arr.some(function (ele) {
-        return JSON.stringify(ele) === item_as_string;
-      });
-      return contains;
+      for (var i = 0; i < arr.length; i++) {
+        if (JSON.stringify(arr[i]) === item_as_string) {
+          return true;
+        }
+      }
+      return false;
     }
     while (individual.length < count) {
       rangeY = [
@@ -397,7 +407,7 @@ Problem = {
 // genetic algorithm configurations
 configuration = {
   size: 10,
-  crossover: Genetic.Crossover.PartiallyMapped,
+  crossover: Genetic.Crossover.Uniform,
   mutation: Genetic.Mutation.ScrambleMutation,
   crossoverPr: 0.7,
   mutationPr: 0.2,
@@ -457,6 +467,17 @@ function start() {
     var pop = calFitness(entities)[0].sort(function (a, b) {
       return configuration.optimize(a.fitness, b.fitness) ? -1 : 1;
     });
+
+    //log each generations best and worst fitness
+    console.log(
+      "generation" +
+        i +
+        "---------------> " +
+        " min : " +
+        pop[pop.length - 1].fitness +
+        " max : " +
+        pop[0].fitness
+    );
 
     // more information
     var mean = totalFit / pop.length;
@@ -520,4 +541,4 @@ function start() {
   return stats;
 }
 
-console.log(start());
+// console.log(start());
