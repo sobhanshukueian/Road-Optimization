@@ -10,6 +10,10 @@ var bestReproject = app.GetBestFittingUTM84ProjectionWkt(
   model.Boundary.BBox2d,
   dbWkt
 );
+var styleConfig = {
+  "Coverage/Grass With Gravel Border": "Polygon2",
+  "Coverage/Restricted Area": "Polygon3",
+};
 var coverageIds = [];
 var waterAreaIds = [];
 
@@ -109,7 +113,7 @@ function getCoverageCoords() {
     var tableC = db.Table("COVERAGES");
     var coverage = tableC.QueryFeature(id);
     console.log("c", id, ":", coverage.RULE_STYLE, "__", coverage.MANUAL_STYLE);
-    coverageTypes.push(coverage.RULE_STYLE);
+    coverageTypes.push(styleConfig[coverage.MANUAL_STYLE]);
     var coords = JSON.parse(JSON.stringify(coverage.GEOMETRY.ToGeoJSON()))
       .coordinates;
     var eachCoverageCoords = [];
@@ -127,7 +131,6 @@ function getWaterAreaCoords() {
   forEach(waterAreaIds, function (id) {
     var tableC = db.Table("WATER_AREAS");
     var waterArea = tableC.QueryFeature(id);
-    coverageTypes.push(waterArea.RULE_STYLE);
     var coords = JSON.parse(JSON.stringify(waterArea.GEOMETRY.ToGeoJSON()))
       .coordinates;
     var eachWaterAreaCoords = [];
@@ -167,11 +170,11 @@ console.log("types:", coverageTypes);
 configuration.coordinates = [roadCoord[0], roadCoord[roadCoord.length - 1]];
 POLYGON = { type: [], coordinates: [] };
 forEach(coverageCoords, function (val) {
-  POLYGON.type.push("Polygon1");
   POLYGON.coordinates.push(val);
 });
+POLYGON.type = coverageTypes;
 forEach(waterAreaCoords, function (val) {
-  POLYGON.type.push("Polygon2");
+  POLYGON.type.push("Polygon1");
   POLYGON.coordinates.push(val);
 });
 // var answer = run(roadCoord, coverageCoords);
