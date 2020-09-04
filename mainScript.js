@@ -112,7 +112,11 @@ function getCoverageCoords() {
     coverageTypes.push(coverage.RULE_STYLE);
     var coords = JSON.parse(JSON.stringify(coverage.GEOMETRY.ToGeoJSON()))
       .coordinates;
-    coverageCoords.push(coords[0]);
+    var eachCoverageCoords = [];
+    forEach(coords[0], function (val) {
+      eachCoverageCoords.push([val[0] * 10000000, val[1] * 10000000]);
+    });
+    coverageCoords.push(eachCoverageCoords);
     tableC.EndQuery();
   });
 }
@@ -126,7 +130,11 @@ function getWaterAreaCoords() {
     coverageTypes.push(waterArea.RULE_STYLE);
     var coords = JSON.parse(JSON.stringify(waterArea.GEOMETRY.ToGeoJSON()))
       .coordinates;
-    waterAreaCoords.push(coords[0]);
+    var eachWaterAreaCoords = [];
+    forEach(coords[0], function (val) {
+      eachWaterAreaCoords.push([val[0] * 10000000, val[1] * 10000000]);
+    });
+    waterAreaCoords.push(eachWaterAreaCoords);
     tableC.EndQuery();
   });
 }
@@ -138,7 +146,11 @@ function getRoadCoord() {
 
   var tableR = db.Table("ROADS");
   var road = tableR.QueryFeature(id);
-  roadCoord = JSON.parse(JSON.stringify(road.GEOMETRY.ToGeoJSON())).coordinates;
+  var originRoadCoords = JSON.parse(JSON.stringify(road.GEOMETRY.ToGeoJSON()))
+    .coordinates;
+  forEach(originRoadCoords, function (val) {
+    roadCoord.push([val[0] * 10000000, val[1] * 10000000]);
+  });
 
   // console.log("coverage", id, ":", coords);
   tableR.EndQuery();
@@ -168,8 +180,16 @@ forEach(waterAreaCoords, function (val) {
 // console.log(answer[2]);
 
 var answer = start();
-console.log(answer["minimum-cords"]);
+console.log("roadCoords:", roadCoord);
+console.log(answer["maximum-cords"]);
 console.log(Object.keys(answer));
-createRoad(answer["minimum-cords"]);
+var convertedBestCoordinates = JSON.parse(answer["maximum-cords"]);
+var originBestCoordinates = [];
+forEach(convertedBestCoordinates, function (val) {
+  console.log("coords:", val[0], "__", val[0] / 10000000);
+  originBestCoordinates.push([val[0] / 10000000.0, val[1] / 10000000.0]);
+});
+console.log("best Coordinates:", originBestCoordinates);
+createRoad(originBestCoordinates);
 
 gc();
