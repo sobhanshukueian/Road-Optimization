@@ -113,55 +113,7 @@ Genetic = {
       );
 
       return [son, daughter];
-    },
-    Uniform: function (mother, father) {
-      var son = [],
-        parents = [mother, father];
-      for (var i = 0; i < mother.length; i++) {
-        son[i] = parents[Math.round(Math.random())][i];
-      }
-      return son;
-    },
-    PartiallyMapped: function (father, mother) {
-      // create two maps, not necessary, but simpler
-      var map1 = {};
-      var map2 = {};
-
-      // choose two crossover points.
-      var ca = Math.floor(Math.random() * (father.length - 1));
-      var cb = ca + Math.floor(Math.random() * (father.length - ca));
-
-      if (ca == cb && ca < father.length - 1) {
-        cb++;
-      }
-
-      var offspring = [father, mother];
-
-      for (var i = ca; i < cb; i++) {
-        offspring[0][i] = mother[i];
-        map1[mother[i]] = father[i];
-
-        offspring[1][i] = father[i];
-        map2[father[i]] = mother[i];
-      }
-      for (var i = 0; i < ca; i++) {
-        while (offspring[0][i] in map1) {
-          offspring[0][i] = map1[offspring[0][i]];
-        }
-        while (offspring[1][i] in map2) {
-          offspring[1][i] = map2[offspring[1][i]];
-        }
-      }
-      for (var i = cb; i < father.length; i++) {
-        while (offspring[0][i] in map1) {
-          offspring[0][i] = map1[offspring[0][i]];
-        }
-        while (offspring[1][i] in map2) {
-          offspring[1][i] = map2[offspring[1][i]];
-        }
-      }
-      return offspring;
-    },
+    }
   },
 
   //mutation function
@@ -311,8 +263,16 @@ Problem = {
     if (include(polygon2, 222) && neededArea / info.totalPolygonArea > 0.9) {
       polygon2.push(2);
     }
-    if (polygon2.length == 1 && polygon2[0] == 222) {
-      polygon2.push(0);
+    else if(include(polygon2, 222)){
+      flage = false
+      for (r = 0; r < polygon2.length; r++) {
+        if(polygon2[r] != 222){
+          flage = true
+        }
+      }
+      if(!flage){
+        polygon2.push(0)
+      }
     }
     fitness += arrayMin(polygon1);
 
@@ -406,12 +366,12 @@ Problem = {
 
 // genetic algorithm configurations
 configuration = {
-  size: 10,
-  crossover: Genetic.Crossover.Uniform,
+  size: 100,
+  crossover: Genetic.Crossover.TwoPoint,
   mutation: Genetic.Mutation.ScrambleMutation,
-  crossoverPr: 0.7,
-  mutationPr: 0.2,
-  iterations: 1000,
+  crossoverPr: 1,
+  mutationPr: 1,
+  iterations: 100,
   fittestAlwaysSurvives: true,
   optimize: Genetic.Optimization.Maximize,
   select1: Genetic.Selection1.Tournament2,
